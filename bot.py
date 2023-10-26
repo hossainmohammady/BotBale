@@ -3,7 +3,7 @@ from bale import Bot, Update, Message,Components,InlineKeyboard,CallbackQuery,Me
 client = Bot(token="1400235071:ndoXjZefyWdE5bZfxQqQcXU27CYOPaTIp85MSIKI")
 
 def readData( name:str):
-	exec
+	pass
 
 @client.event
 async def on_ready():
@@ -36,6 +36,8 @@ async def on_message(message: Message):
 		)
 	if message.text=="محاسبه کرایه":
 		await message.reply(text="نام شهر محل تخلیه را وارد کنید :" )
+	if(readData(message.text)):
+		await message.reply()
 	
 
 @client.event
