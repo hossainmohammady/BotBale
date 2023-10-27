@@ -1,9 +1,22 @@
 import asyncio
 from bale import Bot, Update, Message,Components,InlineKeyboard,CallbackQuery,MenuKeyboard
 client = Bot(token="1400235071:ndoXjZefyWdE5bZfxQqQcXU27CYOPaTIp85MSIKI")
-
+import xlrd 
 def readData( name:str):
-	pass
+ loc="list.xls"
+ work=xlrd.open_workbook(loc)
+ sheet=work.sheet_by_index(0)
+ for row in range(sheet.nrows):
+    cell_value = sheet.cell_value(row, 0)  # ستون اول
+    if name in cell_value  :
+        find_value=[sheet.cell_value(row,0),sheet.cell_value(row,1),sheet.cell_value(row,2),sheet.cell_value(row,3)]
+        return find_value
+
+
+
+	
+
+ 
 
 @client.event
 async def on_ready():
@@ -13,8 +26,8 @@ async def on_ready():
 
 @client.event
 async def on_update(update:Update):
-    print(update.update_id,update.type)
-    
+	print(update.update_id,update.type)
+	
 @client.event
 async def on_message(message: Message):
 	if message.content == "/start":
@@ -34,10 +47,13 @@ async def on_message(message: Message):
 			f"*Hi {message.author.first_name}, Welcome to python-bale-bot bot*",
 			components=component
 		)
-	if message.text=="محاسبه کرایه":
+	if message.text=="لیست کرایه کل و پایه":
 		await message.reply(text="نام شهر محل تخلیه را وارد کنید :" )
-	if(readData(message.text)):
-		await message.reply()
+	value=readData(message.text)
+	if (value is not None):
+		await message.reply(f"نام:  {value[0]}\nکرایه پایه :{int(value[1])}\nکرایه کل: {int(value[2])}\nآدرس :{value[3]}")
+     
+		
 	
 
 @client.event
