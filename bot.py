@@ -44,15 +44,15 @@ async def on_message(message: Message):
 		component.add_menu_keyboard(menu_keyboard=kry2,row=1)
 	
 		await message.reply(
-			f"*Hi {message.author.first_name}, Welcome to python-bale-bot bot*",
+			f"سلام {message.author.first_name}, به ربات دریافت اطلاعات کرایه انجمن کالای جوین خوش آمدید",
 			components=component
 		)
 	if message.text=="لیست کرایه کل و پایه":
-		await message.reply(text="نام شهر محل تخلیه را وارد کنید :" )
+		await message.reply(text="نام گیرنده یا قسمتی از آن را وارد کنید :" )
 	value=readData(message.text)
 	if (value is not None):
 		await message.reply(f"نام:  {value[0]}\nکرایه پایه :{int(value[1])}\nکرایه کل: {int(value[2])}\nآدرس :{value[3]}")
-     
+	
 		
 	
 
