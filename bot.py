@@ -32,7 +32,7 @@ async def on_message(message: Message):
 		component = Components()
 		# component.add_inline_keyboard(InlineKeyboard(text="what is python-bale-bot?", callback_data="python-bale-bot:help"))
 		component.add_inline_keyboard(InlineKeyboard(text="لیست کرایه مقصد",callback_data="pricelist"))
-		component.add_inline_keyboard(InlineKeyboard(text="محاسبه کرایه",callback_data="price"))
+		component.add_inline_keyboard(InlineKeyboard(text="محاسبه کرایه",callback_data="price"),row=2)
 		#kry=MenuKeyboard(text="محاسبه کرایه")
 		#kry2=MenuKeyboard(text="لیست کرایه کل و پایه")
 	
@@ -48,8 +48,10 @@ async def on_message(message: Message):
 	value=readData(message.text)
 	if (value is not None):
 		await message.reply(f"نام:  {value[0]}\nکرایه پایه :{int(value[1])}\nکرایه کل: {int(value[2])}\nآدرس :{value[3]}")
+		
 	else:
-		await message.reply(text="موردی یافت نشد",components=component)
+		
+		await message.reply("موردی یافت نشد",components=component)
 		
 	
 
