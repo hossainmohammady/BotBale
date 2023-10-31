@@ -1,5 +1,6 @@
 import asyncio
-from bale import Bot, Update, Message,Components,InlineKeyboard,CallbackQuery,MenuKeyboard
+import pstats
+from bale import Bot, Update, Message,Components,InlineKeyboard,CallbackQuery,MenuKeyboard, User
 import xlrd 
 client = Bot(token="1400235071:ndoXjZefyWdE5bZfxQqQcXU27CYOPaTIp85MSIKI")
 
@@ -24,15 +25,16 @@ async def on_ready():
 async def on_update(update:Update):
 	print(update.update_id,update.type)
 	
+
+component = Components()
+component.add_inline_keyboard(InlineKeyboard(text="لیست کرایه مقصد",callback_data="pricelist"))
+component.add_inline_keyboard(InlineKeyboard(text="محاسبه کرایه",callback_data="price"),row=2)
 @client.event
 async def on_message(message: Message):
 	if message.content == "/start":
 		
 		
-		component = Components()
-		# component.add_inline_keyboard(InlineKeyboard(text="what is python-bale-bot?", callback_data="python-bale-bot:help"))
-		component.add_inline_keyboard(InlineKeyboard(text="لیست کرایه مقصد",callback_data="pricelist"))
-		component.add_inline_keyboard(InlineKeyboard(text="محاسبه کرایه",callback_data="price"),row=2)
+		
 		#kry=MenuKeyboard(text="محاسبه کرایه")
 		#kry2=MenuKeyboard(text="لیست کرایه کل و پایه")
 	
@@ -53,12 +55,16 @@ async def on_message(message: Message):
 		
 		await message.reply("موردی یافت نشد",components=component)
 		
-	
+@client.event
+async def on_user_input(message: User):
+	pass
 
 @client.event
 async def on_callback(callback: CallbackQuery):
-	
 	if callback.data == "pricelist":
 		await callback.message.reply("نام گیرنده یا قسمتی از آن را وارد کنید ")
+	elif callback.data == "price" :
+		await callback.message.reply("مقصد را وارد کنید :")
+
 
 client.run()
