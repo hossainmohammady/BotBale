@@ -22,9 +22,15 @@ async def on_ready():
 	print(client.user, "is Ready!")
 	
 @client.event
-async def on_update(update:Update):
+async def on_update(update:Update, message:Message):
 	print(update.update_id,update.type)
+	value=readData(message.text)
+	if (value is not None):
+		await message.reply(f"نام:  {value[0]}\nکرایه پایه :{int(value[1])}\nکرایه کل: {int(value[2])}\nآدرس :{value[3]}")
 	
+	elif(value != None):
+		print(value)
+		await message.reply("موردی یافت نشد",components=component)
 
 component = Components()
 component.add_inline_keyboard(InlineKeyboard(text="لیست کرایه مقصد",callback_data="pricelist"))
@@ -47,13 +53,13 @@ async def on_message(message: Message):
 		)
 	if message.text=="لیست کرایه کل و پایه":
 		await message.reply(text="نام گیرنده یا قسمتی از آن را وارد کنید :" )
-	value=readData(message.text)
-	if (value is not None):
-		await message.reply(f"نام:  {value[0]}\nکرایه پایه :{int(value[1])}\nکرایه کل: {int(value[2])}\nآدرس :{value[3]}")
-		
-	else:
-		
-		await message.reply("موردی یافت نشد",components=component)
+	# value=readData(message.text)
+	# if (value is not None):
+	# 	await message.reply(f"نام:  {value[0]}\nکرایه پایه :{int(value[1])}\nکرایه کل: {int(value[2])}\nآدرس :{value[3]}")
+	
+	# elif(value != None):
+	# 	print(value)
+	# 	await message.reply("موردی یافت نشد",components=component)
 		
 @client.event
 async def on_user_input(message: User):
@@ -63,6 +69,7 @@ async def on_user_input(message: User):
 async def on_callback(callback: CallbackQuery):
 	if callback.data == "pricelist":
 		await callback.message.reply("نام گیرنده یا قسمتی از آن را وارد کنید ")
+		
 	elif callback.data == "price" :
 		await callback.message.reply("مقصد را وارد کنید :")
 
