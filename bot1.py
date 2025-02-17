@@ -1,10 +1,26 @@
 from balethon import Client
 from balethon.conditions import at_state,private
 from balethon.objects import InlineKeyboard
+import pandas as pd
 
 
 
 bot=Client(token="1400235071:ndoXjZefyWdE5bZfxQqQcXU27CYOPaTIp85MSIKI")
+
+
+def search(value):
+    # بارگذاری فایل Excel
+    df = pd.read_excel("list.xlsx", sheet_name="sheet1")
+    
+    # جستجو در ستون مشخص
+    results = df[df["نام"].str.contains(value, case=False, na=False)]
+    
+    # نمایش نتایج جستجو
+    if not results.empty:
+        return results
+    else:
+        return "مقدار جستجو شده یافت نشد."
+
 
 @bot.on_message(private & at_state(None))
 async def answer_message(message):
@@ -33,7 +49,9 @@ async def answer_price(message):
     
 @bot.on_message(private & at_state("search"))
 async def answer_search(message):
-    await message.reply("کرایه مورد نظر :   ")
+    result= search(value=message.text)
+    print( result.to_string())
+    await message.reply(f"کرایه مورد نظر : {result.to_string()}  ")
     message.author.del_state()
     
 bot.run()
