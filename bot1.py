@@ -8,24 +8,32 @@ import pandas as pd
 bot=Client(token="1400235071:ndoXjZefyWdE5bZfxQqQcXU27CYOPaTIp85MSIKI")
 
 
-def search(value):
-    # بارگذاری فایل Excel
-    df = pd.read_excel("list.xlsx", sheet_name="sheet1")
-    
-    # جستجو در ستون مشخص
+def search(value: str) -> str:
+    # بارگذاری فایل اکسل
+    df = pd.read_excel("list.xlsx",sheet_name="sheet1")
+
+    # جستجو در ستون 'نام' با استفاده از str.contains
     results = df[df["نام"].str.contains(value, case=False, na=False)]
-    
-    # نمایش نتایج جستجو
-    if not results.empty:
-        return results
-    else:
-        return "مقدار جستجو شده یافت نشد."
+
+    if results.empty:
+        return "موردی یافت نشد."
+
+    # ایجاد خروجی قالب‌بندی‌شده
+    output = "نتایج جستجو:\n\n"
+    for _, row in results.iterrows():
+        output += f"نام: {row['نام']}\n"
+        output += f"کرایه پایه: {row['پایه']}\n"
+        output += f"کرایه کل: {row['کل']}\n"
+        output += f"آدرس: {row['آدرس']}\n"
+        output += "-" * 30 + "\n"
+
+    return output
 
 
 @bot.on_message(private & at_state(None))
 async def answer_message(message):
     await message.reply(
-        "Click a button!",
+        "یک مورد را انتخاب کنید :",
         InlineKeyboard(
             [("جستجوی کرایه", "search")],
             [("محاسبه کرایه", "price")]
@@ -46,12 +54,23 @@ async def answer_callback_query(callback_query):
 async def answer_price(message):
     await message.reply("مقصد مورد نظر  :   ")
     message.author.del_state()
+    await message.reply(
+        "یک مورد را انتخاب کنید :",
+        InlineKeyboard(
+            [("جستجوی کرایه", "search")],
+            [("محاسبه کرایه", "price")]
+        ))
     
 @bot.on_message(private & at_state("search"))
 async def answer_search(message):
     result= search(value=message.text)
-    print( result.to_string())
-    await message.reply(f"کرایه مورد نظر : {result.to_string()}  ")
+    await message.reply(f"کرایه مورد نظر : {result}  ")
     message.author.del_state()
+    await message.reply(
+        "یک مورد را انتخاب کنید :",
+        InlineKeyboard(
+            [("جستجوی کرایه", "search")],
+            [("محاسبه کرایه", "price")]
+        ))
     
 bot.run()
