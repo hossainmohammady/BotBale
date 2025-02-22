@@ -7,8 +7,8 @@
 
 برای اجرای این پروژه نیاز به نصب کتابخانه‌های زیر دارید:
 
-- [pandas](https://pandas.pydata.org/)
-- [balethon](https://github.com/username/balethon)  
+- [PANDAS](https://pandas.pydata.org/docs/) 
+- [balethon](https://github.com/Balethon/Balethon.git)
 برای نصب این کتابخانه‌ها می‌توانید از دستور زیر استفاده کنید:
 
 ```bash
@@ -39,8 +39,12 @@ cd BotBale
 در حال حاضر نیاز به مشارکت نداریم.
 
 منابع
-کتابخانه (https://github.com/Balethon/Balethon.git)[balethon]
-کتابخانه  (https://pandas.pydata.org/docs/)[PANDAS]
+
+
+
+- [balethon](https://github.com/Balethon/Balethon.git)
+
+
 
 
 
