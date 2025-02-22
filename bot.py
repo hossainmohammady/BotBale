@@ -1,77 +1,129 @@
-import asyncio
-import pstats
-from bale import Bot, Update, Message,Components,InlineKeyboard,CallbackQuery,MenuKeyboard, User
-import xlrd 
-client = Bot(token="1400235071:ndoXjZefyWdE5bZfxQqQcXU27CYOPaTIp85MSIKI")
-
-def readData( name:str):
- loc="list.xls"
- work=xlrd.open_workbook(loc)
- sheet=work.sheet_by_index(0)
- find_value=None
- for row in range(sheet.nrows):
-    cell_value = sheet.cell_value(row, 0)  # ستون اول
-    if name in cell_value  :
-        find_value=[sheet.cell_value(row,0),sheet.cell_value(row,1),sheet.cell_value(row,2),sheet.cell_value(row,3)]
-        return find_value
-	
+from balethon import Client
+from balethon.conditions import at_state,private,group,regex
+from balethon.objects import InlineKeyboard
+import pandas as pd
 
 
-@client.event
-async def on_ready():
-	print(client.user, "is Ready!")
-	
-@client.event
-async def on_update(update:Update, message:Message):
-	print(update.update_id,update.type)
-	value=readData(message.text)
-	if (value is not None):
-		await message.reply(f"نام:  {value[0]}\nکرایه پایه :{int(value[1])}\nکرایه کل: {int(value[2])}\nآدرس :{value[3]}")
-	
-	elif(value != None):
-		print(value)
-		await message.reply("موردی یافت نشد",components=component)
 
-component = Components()
-component.add_inline_keyboard(InlineKeyboard(text="لیست کرایه مقصد",callback_data="pricelist"))
-component.add_inline_keyboard(InlineKeyboard(text="محاسبه کرایه",callback_data="price"),row=2)
-@client.event
-async def on_message(message: Message):
-	if message.content == "/start":
-		
-		
-		
-		#kry=MenuKeyboard(text="محاسبه کرایه")
-		#kry2=MenuKeyboard(text="لیست کرایه کل و پایه")
-	
-		# component.add_menu_keyboard(menu_keyboard=kry)
-		# component.add_menu_keyboard(menu_keyboard=kry2,row=1)
-	
-		await message.reply(
-			f"سلام {message.author.first_name}, به ربات دریافت اطلاعات کرایه انجمن کالای جوین خوش آمدید",
-			components=component
-		)
-	if message.text=="لیست کرایه کل و پایه":
-		await message.reply(text="نام گیرنده یا قسمتی از آن را وارد کنید :" )
-	# value=readData(message.text)
-	# if (value is not None):
-	# 	await message.reply(f"نام:  {value[0]}\nکرایه پایه :{int(value[1])}\nکرایه کل: {int(value[2])}\nآدرس :{value[3]}")
-	
-	# elif(value != None):
-	# 	print(value)
-	# 	await message.reply("موردی یافت نشد",components=component)
-		
-@client.event
-async def on_user_input(message: User):
-	pass
+bot=Client(token="1400235071:ndoXjZefyWdE5bZfxQqQcXU27CYOPaTIp85MSIKI")
+user_data={}
+start_key=InlineKeyboard(
+            [("جستجوی کرایه", "search")],
+            [("محاسبه کرایه", "price")]
+        )
 
-@client.event
-async def on_callback(callback: CallbackQuery):
-	if callback.data == "pricelist":
-		await callback.message.reply("نام گیرنده یا قسمتی از آن را وارد کنید ")
-		
-	elif callback.data == "price" :
-		await callback.message.reply("مقصد را وارد کنید :")
+def search(value: str) -> str:
+    # بارگذاری فایل اکسل
+    df = pd.read_excel("list.xlsx",sheet_name="sheet1")
+
+    # جستجو در ستون 'نام' با استفاده از str.contains
+    results = df[df["نام"].str.contains(value, case=False, na=False)]
+
+    if results.empty:
+        return "موردی یافت نشد."
+
+    # ایجاد خروجی قالب‌بندی‌شده
+    output = "نتایج جستجو:\n\n"
+    for _, row in results.iterrows():
+        output += f"نام: {row['نام']}\n"
+        output += f"کرایه پایه: {row['پایه']}\n"
+        output += f"کرایه کل: {row['کل']}\n"
+        output += f"آدرس: {row['آدرس']}\n"
+        output += "-" * 30 + "\n"
+
+    return output
 
 
-client.run()
+@bot.on_message(private & at_state(None))
+async def answer_message(message):
+    await message.reply("یک مورد را انتخاب کنید :",start_key)
+
+@bot.on_message(group & regex("کرایه"))
+async def group_message(message):
+    word=message.text.split()
+    result=search(word[1])
+    await message.reply(f"کرایه مورد نظر :{result}" )
+
+@bot.on_callback_query(at_state("price2"))  
+async def answer_price2(callback_query):
+    print(callback_query.data)
+    result=price_func(callback_query.data)
+    paye=result["پایه"]
+    col=result["کل"]
+    user_data[callback_query.author.id]={"name":callback_query.data,"paye": paye ,"col":col  }
+    await callback_query.answer("وزن خالص را وارد کنید:")
+    callback_query.author.del_state()
+    callback_query.author.set_state("waight")
+
+@bot.on_callback_query(private)
+async def answer_callback_query(callback_query):
+     if callback_query.data=="price":
+        await callback_query.answer("مقصد مورد نظر را وارد کنید \n نام مقصد یا نام شهر کفایت می کند")
+        callback_query.author.set_state("price")
+     if callback_query.data=="search":
+        await callback_query.answer("مقصد مورد نظر را وارد کنید \n نام مقصد یا نام شهر کفایت می کند")
+        callback_query.author.set_state("search")
+
+
+    
+@bot.on_message(private & at_state("search"))
+async def answer_search(message):
+    result= search(value=message.text)
+    await message.reply(f"کرایه مورد نظر : {result}  ",start_key)
+    message.author.del_state()
+    
+        
+    
+    
+def price_func(value: str) -> str:
+    # بارگذاری فایل اکسل
+    df = pd.read_excel("list.xlsx",sheet_name="sheet1")
+
+    # جستجو در ستون 'نام' با استفاده از str.contains
+    results = df[df["نام"].str.contains(value, case=False, na=False)]
+
+    if results.empty:
+        return None
+
+    return results    
+    
+@bot.on_message(private & at_state("price"))
+async def answer_price(message):
+    result =price_func(value=message.text)
+    # ایجاد خروجی قالب‌بندی‌شده
+    output=""
+    print(result)
+    if result is None:
+        await message.reply("موردی یافت نشد.",start_key)
+        message.author.del_state()
+    else:
+        for _, row in result.iterrows():
+            output += f"نام: {row['نام']}\n"
+            output += f"کرایه پایه: {row['پایه']}\n"
+            output += f"کرایه کل: {row['کل']}\n"
+            output += f"آدرس: {row['آدرس']}\n"
+            output += "-" * 30 + "\n"
+            await message.reply(f"{output}\n درصورت صحیح بودن مقصد مورد نظر آن را تایید کنید",InlineKeyboard([("تایید",row["نام"])]))
+            output=""
+        message.author.del_state()
+        message.author.set_state("price2")
+            
+
+    
+    
+
+    
+@bot.on_message(at_state("waight"))
+async def answer_waight(message):
+    waight=message.text
+    user_id=message.author.id
+    paye=user_data[user_id]["paye"]
+    col=user_data[user_id]["col"]
+    result_paye=int(waight)*int(paye)
+    result_col=int(waight)*int(col)
+    result_paye="{:,}".format(result_paye)
+    result_col="{:,}".format(result_col)
+    await message.reply(f"کرایه محاسبه شده :\n کرایه پایه:{result_paye}\n کرایه کل: {result_col}",start_key)
+    message.author.del_state()
+    
+bot.run()
