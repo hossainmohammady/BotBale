@@ -3,9 +3,8 @@ from balethon.conditions import at_state,private,group,regex
 from balethon.objects import InlineKeyboard
 import pandas as pd
 
-
-
 bot=Client(token="1400235071:ndoXjZefyWdE5bZfxQqQcXU27CYOPaTIp85MSIKI")
+
 user_data={}
 start_key=InlineKeyboard(
             [("جستجوی کرایه", "search")],
@@ -36,17 +35,21 @@ def search(value: str) -> str:
 
 @bot.on_message(private & at_state(None))
 async def answer_message(message):
+
     await message.reply("یک مورد را انتخاب کنید :",start_key)
+
 
 @bot.on_message(group & regex("کرایه"))
 async def group_message(message):
     word=message.text.split()
+    if word.len()>2:
+        return
+    await message.chat.send_action("typing")
     result=search(word[1])
     await message.reply(f"کرایه مورد نظر :{result}" )
 
-@bot.on_callback_query(at_state("price2"))  
+@bot.on_callback_query(at_state("price2"))
 async def answer_price2(callback_query):
-    print(callback_query.data)
     result=price_func(callback_query.data)
     paye=result["پایه"]
     col=result["کل"]
@@ -65,16 +68,17 @@ async def answer_callback_query(callback_query):
         callback_query.author.set_state("search")
 
 
-    
+
 @bot.on_message(private & at_state("search"))
 async def answer_search(message):
+    await message.chat.send_action("typing")
     result= search(value=message.text)
     await message.reply(f"کرایه مورد نظر : {result}  ",start_key)
     message.author.del_state()
-    
-        
-    
-    
+
+
+
+
 def price_func(value: str) -> str:
     # بارگذاری فایل اکسل
     df = pd.read_excel("list.xlsx",sheet_name="sheet1")
@@ -85,14 +89,15 @@ def price_func(value: str) -> str:
     if results.empty:
         return None
 
-    return results    
-    
+    return results
+
 @bot.on_message(private & at_state("price"))
 async def answer_price(message):
+    await message.chat.send_action("typing")
     result =price_func(value=message.text)
     # ایجاد خروجی قالب‌بندی‌شده
     output=""
-    print(result)
+
     if result is None:
         await message.reply("موردی یافت نشد.",start_key)
         message.author.del_state()
@@ -107,15 +112,21 @@ async def answer_price(message):
             output=""
         message.author.del_state()
         message.author.set_state("price2")
-            
 
-    
-    
 
-    
+
+
+
+
 @bot.on_message(at_state("waight"))
 async def answer_waight(message):
     waight=message.text
+    try:
+        waight = int(waight)
+    except ValueError:
+        await message.reply("❌ لطفاً وزن خالص را به صورت عدد صحیح وارد کنید.")
+        return
+    await message.chat.send_action("typing")
     user_id=message.author.id
     paye=user_data[user_id]["paye"]
     col=user_data[user_id]["col"]
@@ -123,7 +134,11 @@ async def answer_waight(message):
     result_col=int(waight)*int(col)
     result_paye="{:,}".format(result_paye)
     result_col="{:,}".format(result_col)
-    await message.reply(f"کرایه محاسبه شده :\n کرایه پایه:{result_paye}\n کرایه کل: {result_col}",start_key)
+    await message.reply(
+        f'''📦 کرایه محاسبه شده:
+    💰 کرایه پایه: {result_paye} تومان
+    💰 کرایه کل: {result_col} تومان
+⚠️ لطفاً مبلغ حق بیمه را نیز در نظر بگیرید.''',start_key)
     message.author.del_state()
-    
+
 bot.run()
