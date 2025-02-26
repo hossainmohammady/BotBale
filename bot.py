@@ -1,3 +1,4 @@
+
 from balethon import Client
 from balethon.conditions import at_state,private,group,regex
 from balethon.objects import InlineKeyboard
@@ -42,7 +43,7 @@ async def answer_message(message):
 @bot.on_message(group & regex("کرایه"))
 async def group_message(message):
     word=message.text.split()
-    if word.len()>2:
+    if len(word)>2:
         return
     await message.chat.send_action("typing")
     result=search(word[1])
